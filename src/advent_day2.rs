@@ -61,6 +61,66 @@ pub fn part_one() {
     println!("{}", amount_of_id_of_game_playable);
 }
 
+pub fn part_two() {
+    // Read yaml file
+    let advent_day2_yaml_path = "src/advent_day2_data.yaml";
+    let advent_day2_yaml_content =
+        read_yaml_file(advent_day2_yaml_path).expect("Erreur de lecture du fichier YAML");
+
+    let yaml: serde_json::Value = serde_yaml::from_str(&advent_day2_yaml_content).unwrap();
+    let serialize_advent_day2 = serde_json::to_string(&yaml).unwrap();
+    let advent_day2_json = serde_json::from_str::<HashMap<String, String>>(&serialize_advent_day2)
+        .expect("unserialization error");
+
+    let mut sum_cubes = 0;
+    // println!("{:?}", advent_day2_json);
+    // iterate trough the games
+    for (_key, val) in advent_day2_json.iter() {
+        // println!("{}", key);
+        let mut red_min = 1;
+        let mut blue_min = 1;
+        let mut green_min = 1;
+
+        // for each game get the colors of each draw
+        for game in val.split("; ") {
+            for color_count in game.split(", ") {
+                let parts: Vec<&str> = color_count.split(' ').collect();
+                // println!("{}", color_count);
+                if let Some(count_str) = parts.get(0) {
+                    // println!("{}", count_str);
+                    if let Ok(count) = count_str.parse::<u32>() {
+                        if let Some(color) = parts.get(1) {
+                            if color.to_string() == "green" && green_min == 1 {
+                                green_min = count    
+                            }
+                            if color.to_string() == "green" && green_min != 1 && count > green_min {
+                                green_min = count;
+                            }
+                            if color.to_string() == "red" && red_min == 1 {
+                                red_min = count    
+                            }
+                            if color.to_string() == "red" && red_min != 1 && count > red_min {
+                                red_min = count;
+                            }
+                            if color.to_string() == "blue" && blue_min == 1 {
+                                blue_min = count    
+                            }
+                            if color.to_string() == "blue" && blue_min != 1 && count > blue_min {
+                                blue_min = count;
+                            }                        
+                        }
+                    }
+                }
+            }
+        }
+
+        let sum_cube_game = red_min * blue_min * green_min;
+
+        sum_cubes += sum_cube_game;
+    }
+    println!("{}", sum_cubes);
+}
+
 fn read_yaml_file(file_path: &str) -> std::io::Result<String> {
     let mut file = File::open(file_path)?;
     let mut contents = String::new();
